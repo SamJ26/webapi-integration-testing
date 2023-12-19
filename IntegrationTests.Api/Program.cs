@@ -1,3 +1,6 @@
+using IntegrationTests.Api.DataAccess;
+using IntegrationTests.Api.Endpoints;
+using Microsoft.EntityFrameworkCore;
 
 namespace IntegrationTests.Api;
 
@@ -6,46 +9,27 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        {
+            var services = builder.Services;
+            var configuration = builder.Configuration;
 
-        // Add services to the container.
-        builder.Services.AddAuthorization();
+            services.AddEndpointsApiExplorer();
+            services.AddSwaggerGen();
 
-        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+            services.AddDbContext<AppDbContext>(options =>
+                options.UseNpgsql(configuration.GetConnectionString("Default")));
+        }
 
         var app = builder.Build();
-
-        // Configure the HTTP request pipeline.
-        if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();
             app.UseSwaggerUI();
         }
 
-        app.UseHttpsRedirection();
-
-        app.UseAuthorization();
-
-        var summaries = new[]
-        {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
-
-        app.MapGet("/weatherforecast", (HttpContext httpContext) =>
-        {
-            var forecast =  Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                {
-                    Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    TemperatureC = Random.Shared.Next(-20, 55),
-                    Summary = summaries[Random.Shared.Next(summaries.Length)]
-                })
-                .ToArray();
-            return forecast;
-        })
-        .WithName("GetWeatherForecast")
-        .WithOpenApi();
+        var groupBuilder = app.MapGroup("books");
+        groupBuilder.MapGet(string.Empty, GetBooksEndpoint.Handle);
+        groupBuilder.MapPost(string.Empty, CreateBookEndpoint.Handle);
+        groupBuilder.MapDelete("{id:int}", DeleteBookEndpoint.Handle);
 
         app.Run();
     }
