@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Mvc;
-
 namespace IntegrationTests.Api.Endpoints;
 
 public sealed class CreateBookEndpoint
@@ -9,3 +7,5 @@ public sealed class CreateBookEndpoint
         throw new NotImplementedException();
     }
 }
+
+public record CreateBookRequest(string Title);

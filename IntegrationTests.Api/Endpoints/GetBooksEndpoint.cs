@@ -7,3 +7,12 @@ public sealed class GetBooksEndpoint
         throw new NotImplementedException();
     }
 }
+
+public record GetBooksResponse
+{
+    public required List<Book> Books { get; init; }
+
+    public record Book(
+        int Id,
+        string Title);
+}
