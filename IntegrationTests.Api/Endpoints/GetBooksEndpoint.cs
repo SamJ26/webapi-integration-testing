@@ -1,10 +1,31 @@
+using IntegrationTests.Api.DataAccess;
+using IntegrationTests.Api.DataAccess.Entities;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
 namespace IntegrationTests.Api.Endpoints;
 
 public sealed class GetBooksEndpoint
 {
-    public static Task<IResult> Handle()
+    public static async Task<IResult> Handle([FromServices] AppDbContext dbContext)
     {
-        throw new NotImplementedException();
+        var books = await dbContext
+            .Books
+            .ToListAsync();
+
+        var response = MapToResponse(books);
+
+        return Results.Ok(response);
+    }
+
+    private static GetBooksResponse MapToResponse(IEnumerable<BookEntity> books)
+    {
+        return new GetBooksResponse()
+        {
+            Books = books
+                .Select(x => new GetBooksResponse.Book(x.Id, x.Title))
+                .ToList()
+        };
     }
 }
 
